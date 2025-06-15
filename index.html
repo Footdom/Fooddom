@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Fooddom — Заказ еды</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background: #23272b; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .brand {
+      text-align: center;
+      margin-top: 32px;
+      margin-bottom: 10px;
+    }
+    .brand-title {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 48px;
+      font-weight: bold;
+      color: #ffd600;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 12px #000a;
+    }
+    .brand-city {
+      font-size: 22px;
+      color: #ffd600;
+      margin-top: 2px;
+      letter-spacing: 1px;
+      font-weight: 500;
+      text-shadow: 0 1px 6px #0008;
+    }
+    h1, h2 { color: #ffd600; }
+    .categories { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .category-btn { background: #333; color: #ffd600; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+    .category-btn.active, .category-btn:hover { background: #ffd600; color: #23272b; }
+    .menu-list { display: flex; flex-wrap: wrap; gap: 12px; }
+    .card { background: #2c2f34; border-radius: 12px; box-shadow: 0 2px 8px #0004; width: 180px; padding: 12px; display: flex; flex-direction: column; align-items: center; }
+    .card img { width: 90px; height: 70px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+    .card-title { font-size: 16px; margin-bottom: 4px; color: #ffd600; }
+    .card-desc { color: #888; font-size: 13px; margin-bottom: 4px; text-align: center; }
+    .card-price { font-size: 15px; margin-bottom: 8px; }
+    .card-controls { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .add-btn { background: #ffd600; color: #23272b; border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 15px; }
+    .remove-btn { background: #888; color: #fff; border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 15px; }
+    .card-unavailable { opacity: 0.5; }
+    .card-unavailable img { filter: grayscale(1); }
+    .card-unavailable .add-btn,
+    .card-unavailable .remove-btn { background: #ccc !important; color: #fff !important; cursor: not-allowed !important; }
+    .card-unavailable .card-title { color: #ccc; }
+    .card-unavailable .card-price { color: #ccc; }
+    .card-unavailable .card-desc { color: #bbb; }
+    .card-unavailable .not-available { color: #ccc; font-size: 13px; margin-top: 4px; }
+    .cart {
+      background: #23272b;
+      border-radius: 12px;
+      margin-top: 24px;
+      padding: 12px;
+      box-shadow: 0 2px 8px #0004;
+      min-height: 80px;
+    }
+    .cart-list { list-style: none; padding: 0; margin: 0 0 10px 0; }
+    .cart-list li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .cart-total { font-size: 18px; color: #ffd600; margin-bottom: 8px; }
+    .order-form input, .order-form select, .order-form textarea { padding: 8px; margin-bottom: 8px; border-radius: 6px; border: none; width: 100%; font-size: 15px; }
+    .order-btn { background: #ffd600; color: #23272b; border: none; border-radius: 8px; padding: 10px 18px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; }
+    .order-success {
+      color: #00e676;
+      font-size: 20px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      text-align: center;
+      font-weight: bold;
+      transition: opacity 0.3s;
+    }
+    .delivery-buttons { display: flex; gap: 10px; margin-bottom: 12px; }
+    .delivery-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2c2f34;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 8px 4px;
+      cursor: pointer;
+      color: #ffd600;
+      font-size: 14px;
+      gap: 8px;
+      transition: border 0.2s, background 0.2s;
+      min-width: 0;
+      min-height: 48px;
+      text-align: left;
+    }
+    .delivery-btn.selected, .delivery-btn:focus {
+      border: 2px solid #ffd600;
+      background: #333;
+      outline: none;
+    }
+    .delivery-btn svg, .delivery-btn img {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .delivery-desc {
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+    .contact-info {
+      text-align: center;
+      margin-bottom: 18px;
+      color: #ffd600;
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 4px; }
+      .brand-title { font-size: 32px; }
+      .brand-city { font-size: 15px; }
+      .menu-list { gap: 6px; }
+      .card { width: 46vw; min-width: 120px; padding: 7px; }
+      .card img { width: 60px; height: 45px; }
+      .card-title { font-size: 13px; }
+      .card-desc { font-size: 11px; }
+      .card-price { font-size: 12px; }
+      .add-btn, .remove-btn { font-size: 13px; padding: 4px 7px; }
+      .delivery-btn { font-size: 12px; min-height: 38px; padding: 6px 2px; }
+      .order-btn { font-size: 15px; padding: 8px 8px; }
+      .contact-info { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <div class="brand-title">Fooddom</div>
+      <div class="brand-city">Pattaya</div>
+    </div>
+    <div class="contact-info">
+      По всем вопросам: <b>@fooddom361</b>
+    </div>
+    <h1>Заказ еды</h1>
+    <div class="categories" id="categories"></div>
+    <div class="menu-list" id="menu"></div>
+    <div class="cart" id="cart" style="display:none;">
+      <h2>Корзина</h2>
+      <ul class="cart-list" id="cart-list"></ul>
+      <div class="cart-total" id="cart-total"></div>
+      <form class="order-form" id="order-form" autocomplete="off">
+        <input type="text" id="name" placeholder="Имя" required>
+        <input type="text" id="telegram" placeholder="Ник в Telegram (например, @username)" required>
+        <input type="tel" id="phone" placeholder="Телефон" required>
+        <input type="text" id="address" placeholder="Адрес доставки" required>
+        <div>
+          <h2 style="font-size:16px;margin:10px 0 6px 0;">Выберите способ доставки</h2>
+          <div class="delivery-buttons" id="delivery-buttons">
+            <button type="button" class="delivery-btn selected" data-value="grab" tabindex="0">
+              <svg viewBox="0 0 100 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text x="0" y="22" font-size="22" font-family="Arial" fill="#00b14f">Grab</text>
+              </svg>
+              <span>
+                Grab<br>
+                <span class="delivery-desc">Быстро, по всему городу<br>Стоимость рассчитывается при оформлении</span>
+              </span>
+            </button>
+            <button type="button" class="delivery-btn" data-value="free" tabindex="0">
+              <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Free">
+              <span>
+                Бесплатно<br>
+                <span class="delivery-desc">Только для гостей Seven Seas Côte d'Azur<br>Доставка до двери</span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <select id="payment" required>
+          <option value="card">Перевод по карте</option>
+        </select>
+        <div id="cash-fields" style="display:none;">
+          <div class="cash-info">Укажите номинал купюры, чтобы мы могли подготовить сдачу</div>
+          <input type="number" id="cashAmount" placeholder="Номинал купюры (например, 1000)" min="1">
+          <div class="change-info" id="change-info" style="display:none;"></div>
+        </div>
+        <textarea id="comment" placeholder="Комментарий к заказу (необязательно)" rows="2"></textarea>
+        <button type="submit" class="order-btn">Оформить заказ</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    const TELEGRAM_BOT_TOKEN = '8185882590:AAHPeTq5n9kOFAy6T8trwBVH5MZCaEX0tmc';
+    const TELEGRAM_CHAT_ID = '7567253745';
+    const MENU_URL = 'https://script.google.com/macros/s/AKfycbxu0lkODTN7jGBCqYbsNA0-njTGFfzqQ878N4iDW2w-VW6-fScQf0ku2PAtxxq_c3lN/exec';
+
+    let menuData = [];
+    const categories = ['Супы', 'Горячее', 'Гарнир', 'Соусы', 'Напитки'];
+    let selectedCategory = categories[0];
+    let cart = {};
+    let selectedDelivery = 'grab';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Delivery buttons logic
+      const deliveryBtns = document.querySelectorAll('.delivery-btn');
+      const paymentSelect = document.getElementById('payment');
+      const cashFields = document.getElementById('cash-fields');
+      const cashAmountInput = document.getElementById('cashAmount');
+      const changeInfo = document.getElementById('change-info');
+
+      function setPaymentOptions() {
+        if (selectedDelivery === 'grab') {
+          paymentSelect.innerHTML = `<option value="card">Перевод по карте</option>`;
+          paymentSelect.value = 'card';
+          cashFields.style.display = 'none';
+          cashAmountInput.removeAttribute('required');
+          changeInfo.style.display = 'none';
+        } else {
+          paymentSelect.innerHTML = `
+            <option value="">Оплата</option>
+            <option value="cash">Наличные</option>
+            <option value="card">Перевод по карте</option>
+          `;
+        }
+      }
+
+      deliveryBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          deliveryBtns.forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedDelivery = btn.getAttribute('data-value');
+          setPaymentOptions();
+        });
+      });
+
+      setPaymentOptions();
+
+      paymentSelect.addEventListener('change', function() {
+        if (paymentSelect.value === 'cash') {
+          cashFields.style.display = 'block';
+          cashAmountInput.setAttribute('required', 'required');
+          showChange();
+        } else {
+          cashFields.style.display = 'none';
+          cashAmountInput.removeAttribute('required');
+          changeInfo.style.display = 'none';
+        }
+      });
+      cashAmountInput.addEventListener('input', showChange);
+      function showChange() {
+        const total = Object.values(cart).reduce((sum, i) => sum + Number(i.price) * i.qty, 0);
+        const cash = Number(cashAmountInput.value);
+        if (cash && total > 0) {
+          if (cash >= total) {
+            changeInfo.textContent = `Сдача: ${cash - total} ฿`;
+            changeInfo.style.display = 'block';
+          } else {
+            changeInfo.textContent = `Недостаточно для оплаты заказа`;
+            changeInfo.style.display = 'block';
+          }
+        } else {
+          changeInfo.textContent = '';
+          changeInfo.style.display = 'none';
+        }
+      }
+    });
+
+    function renderCategories() {
+      const catDiv = document.getElementById('categories');
+      catDiv.innerHTML = '';
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn' + (cat === selectedCategory ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+          selectedCategory = cat;
+          renderCategories();
+          renderMenu();
+        };
+        catDiv.appendChild(btn);
+      });
+    }
+
+    function renderMenu() {
+      const menuDiv = document.getElementById('menu');
+      menuDiv.innerHTML = '';
+      menuData
+        .filter(item => item.category && item.category.trim() === selectedCategory)
+        .forEach(item => {
+          const isAvailable = !!item.available;
+          const card = document.createElement('div');
+          card.className = 'card' + (!isAvailable ? ' card-unavailable' : '');
+          card.innerHTML = `
+            <img src="${item.img}" alt="${item.name}">
+            <div class="card-title">${item.name}</div>
+            <div class="card-desc">${item.description ? item.description : ''}</div>
+            <div class="card-price">${item.price} ฿</div>
+            <div class="card-controls">
+              <button class="remove-btn" onclick="updateCart(${item.id}, -1)" ${!isAvailable ? 'disabled' : ''}>-</button>
+              <span id="qty-${item.id}">${cart[item.id]?.qty || 0}</span>
+              <button class="add-btn" onclick="updateCart(${item.id}, 1)" ${!isAvailable ? 'disabled' : ''}>+</button>
+            </div>
+            ${!isAvailable ? '<div class="not-available">Нет в наличии</div>' : ''}
+          `;
+          menuDiv.appendChild(card);
+        });
+    }
+
+    window.updateCart = function(id, delta) {
+      const item = menuData.find(i => Number(i.id) === Number(id));
+      if (!item) return;
+      if (!item.available) return;
+      if (!cart[id]) cart[id] = { ...item, qty: 0 };
+      let newQty = cart[id].qty + delta;
+      newQty = Math.max(0, newQty);
+      cart[id].qty = newQty;
+      if (cart[id].qty === 0) delete cart[id];
+      document.getElementById(`qty-${id}`).textContent = cart[id]?.qty || 0;
+      renderCart();
+    };
+
+    function renderCart() {
+      const cartDiv = document.getElementById('cart');
+      const cartList = document.getElementById('cart-list');
+      const cartTotal = document.getElementById('cart-total');
+      const items = Object.values(cart);
+      if (items.length === 0) {
+        cartDiv.style.display = 'none';
+        return;
+      }
+      cartDiv.style.display = 'block';
+      cartList.innerHTML = '';
+      let total = 0;
+      items.forEach(item => {
+        total += Number(item.price) * item.qty;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${item.name} x ${item.qty}</span>
+          <span>${Number(item.price) * item.qty} ฿</span>
+        `;
+        cartList.appendChild(li);
+      });
+      cartTotal.textContent = `Итого: ${total} ฿`;
+    }
+
+    document.getElementById('order-form').onsubmit = async function(e) {
+      e.preventDefault();
+      const submitBtn = document.querySelector('.order-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка...';
+
+      const name = document.getElementById('name').value.trim();
+      const telegram = document.getElementById('telegram').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const payment = document.getElementById('payment').value;
+      const cashAmount = document.getElementById('cashAmount') ? document.getElementById('cashAmount').value.trim() : '';
+      const comment = document.getElementById('comment').value.trim();
+      const itemsArr = Object.values(cart);
+      const total = itemsArr.reduce((sum, i) => sum + Number(i.price) * i.qty, 0);
+
+      // Проверка обязательных полей
+      if (!name || !telegram || !phone || !address) {
+        alert('Пожалуйста, заполните все поля! Если нет контактной информации, свяжитесь с нами: @fooddom361');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Оформить заказ';
+        return;
+      }
+
+      // Получаем и увеличиваем номер заказа
+      let orderNumber = Number(localStorage.getItem('orderNumber') || '0') + 1;
+      localStorage.setItem('orderNumber', orderNumber);
+
+      // Формируем чек
+      let orderLines = itemsArr.map(i => `${i.name} x${i.qty} — ${i.price * i.qty} ฿`).join('\n');
+
+      let paymentText = '';
+      let changeText = '';
+      if (payment === 'cash') {
+        const cash = Number(cashAmount);
+        const change = cash - total;
+        paymentText = `Оплата: Наличные (номинал купюры: ${cashAmount})`;
+        if (!cashAmount || isNaN(cash) || cash < total) {
+          alert('Номинал купюры меньше суммы заказа! Пожалуйста, укажите корректную сумму.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Оформить заказ';
+          return;
+        }
+        changeText = `Сдача с купюры: ${change} ฿`;
+      } else if (payment === 'card') {
+        paymentText = 'Оплата: Перевод по карте';
+      }
+
+      let deliveryText = '';
+      if (selectedDelivery === 'grab') {
+        deliveryText = 'Доставка: Grab (быстро, по всему городу, стоимость рассчитывается при оформлении)';
+      } else {
+        deliveryText = 'Доставка: Бесплатная (только для гостей Seven Seas Côte d\'Azur, доставка до двери)';
+      }
+
+      const text =
+        `🛒 Новый заказ №${orderNumber}!\n` +
+        `Имя: ${name}\n` +
+        `Telegram: ${telegram}\n` +
+        `Телефон: ${phone}\n` +
+        `Адрес: ${address}\n` +
+        `${deliveryText}\n` +
+        (comment ? `Комментарий: ${comment}\n` : '') +
+        `\nЗаказ:\n${orderLines}\n\n` +
+        `${paymentText}\nСумма: ${total} ฿${changeText ? '\n' + changeText : ''}`;
+
+      try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: text
+          })
+        });
+        const result = await response.json();
+        if (result.ok) {
+          window.location.href = 'success.html';
+        } else {
+          alert('Ошибка отправки заказа в Telegram!');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Оформить заказ';
+        }
+      } catch (err) {
+        alert('Ошибка отправки заказа в Telegram!');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Оформить заказ';
+      }
+    };
+
+    async function loadMenu() {
+      try {
+        const res = await fetch(MENU_URL);
+        let data = await res.json();
+        if (data.menu) data = data.menu;
+        menuData = data.map((item, idx) => ({
+          ...item,
+          price: Number(item.price),
+          available: String(item.available).trim().toLowerCase() === "true",
+          id: idx + 1
+        }));
+        renderMenu();
+      } catch (e) {
+        alert('Ошибка загрузки меню. Проверьте ссылку!');
+      }
+    }
+
+    renderCategories();
+    loadMenu();
+    renderCart();
+  </script>
+</body>
+</html>
